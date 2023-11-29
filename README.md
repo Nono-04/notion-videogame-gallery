@@ -8,6 +8,9 @@ If you want to see the results, you can take a look at [a minimalist example](ht
 
 The code could still be improved in various places, but c'mon, this bot is trying his hardest to make your game collection shine, who could judge him for being a bit messy?
 
+## Fork
+This fork added some properties from IMDB
+Genres, Critics Rating, People Rating, Game Modes, Involved Companies, Keywords, Player Perspective
 
 ## Setup
 
