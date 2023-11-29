@@ -129,6 +129,27 @@ def check_and_update_notion():
                         {"text": {"content": gd.name}}
                     ]
                 },
+                "Genres": {
+                    "multi_select": [{"name": genre} for genre in gd.genres]
+                },
+                "Game Modes": {
+                    "multi_select": [{"name": mode} for mode in gd.game_modes]
+                },
+                "Companies": {
+                    "multi_select": [{"name": company} for company in gd.involved_companies]
+                },
+                "Keywords": {
+                    "multi_select": [{"name": keyword} for keyword in gd.keywords]
+                },
+                "Player Perspectives": {
+                    "multi_select": [{"name": playerPerspective} for playerPerspective in gd.player_perspectives]
+                },
+                "Critics Rating": {
+                    "number": gd.critics_rating
+                },
+                "People Rating": {
+                    "number": gd.people_rating
+                },
             }
         }
 
@@ -166,6 +187,12 @@ def check_and_update_notion():
             headers=notion_headers,
             data=json.dumps(update_data)
         )
+        
+        if r_page_props.status_code != 200:
+            fail_notion(game['id'])            
+            continue
+            
+        print(f"Finished updating properties for {gd.name}")
 
         # Update page content
 
@@ -379,7 +406,6 @@ def check_and_update_notion():
 
 
 class GameData:
-
     def __init__(self):
 
         self.name = None
@@ -395,9 +421,17 @@ class GameData:
 
         # IGDB Data
         self.release_date = None
+        self.raw_release_date = None
         self.wikipedia_link = None
         self.igdb_description = None
         self.igdb_images = []
+        self.genres = []
+        self.critics_rating = None
+        self.people_rating = None
+        self.game_modes = [] 
+        self.involved_companies = []
+        self.keywords = []
+        self.player_perspectives = []
 
         # Youtube Trailer link
         self.yt_trailer = None
@@ -452,7 +486,7 @@ class GameData:
         self.hero, self.grid_credits_hero = self.request_image_by_name("heroes", {'dimensions': ["1920x620"]})
 
         self.__fetch_meta_data()
-
+        
     def fetch_steamgrid_id(self):
         r = requests.get(f'{GRID_BASE_URL}/search/autocomplete/{self.name}',
                          headers=steamgrid_headers)
@@ -532,15 +566,102 @@ class GameData:
 
             if r.status_code == 200 and len(r.json()) > 0:
                 data = r.json()
+                
                 try:
                     igdb_game = data[next(i for i, v in enumerate(data) if v['name'].lower() == self.name.lower())]
                 except StopIteration:
                     igdb_game = data[0]
                 game_id = igdb_game['id']
+                
+                try:
+                    self.critics_rating = round(igdb_game['aggregated_rating'], 2)
+                except:
+                    pass
+                
+                try:
+                    self.people_rating = round(igdb_game['rating'], 2)
+                except:
+                    pass
 
+
+                try:
+                    for genreId in igdb_game['genres']:
+                        try:
+                            r_genre = requests.post(f'{IGDB_BASE_URL}/genres',
+                                                    data=f'fields *; where id = {genreId};',
+                                                    headers=igdb_headers(igdb_token))
+                            if r_genre.status_code == 200 and len(r_genre.json()) > 0:
+                                self.genres.append(r_genre.json()[0]['name'])
+                        except:
+                            pass
+                except Exception as e:
+                    pass
+                
+                time.sleep(0.5)
+                
+                try:
+                    for modeId in igdb_game['game_modes']:
+                        try:
+                            r_mode = requests.post(f'{IGDB_BASE_URL}/game_modes',
+                                                    data=f'fields *; where id = {modeId};',
+                                                    headers=igdb_headers(igdb_token))
+                            if r_mode.status_code == 200 and len(r_mode.json()) > 0:
+                                self.game_modes.append(r_mode.json()[0]['name'])
+                        except:
+                            pass
+                except Exception as e:
+                    pass
+                    
+                time.sleep(0.5)
+                
+                try:
+                    for companyId in igdb_game['involved_companies']:
+                        try:
+                            r_company = requests.post(f'{IGDB_BASE_URL}/companies',
+                                                    data=f'fields *; where id = {companyId};',
+                                                    headers=igdb_headers(igdb_token))
+                            if r_company.status_code == 200 and len(r_company.json()) > 0:
+                                self.involved_companies.append(r_company.json()[0]['name'])
+                        except:
+                            pass
+                except Exception as e:
+                    pass
+                    
+                time.sleep(0.5)
+                try:
+                    for keywordId in igdb_game['keywords']:
+                        try:
+                            r_keyword = requests.post(f'{IGDB_BASE_URL}/keywords',
+                                                    data=f'fields *; where id = {keywordId};',
+                                                    headers=igdb_headers(igdb_token))
+                            if r_keyword.status_code == 200 and len(r_keyword.json()) > 0:
+                                self.keywords.append(r_keyword.json()[0]['name'])
+                        except:
+                            pass
+                except Exception as e:
+                    pass
+                    
+                time.sleep(0.5)
+                
+                try:
+                    for playerPerspectiveId in igdb_game['player_perspectives']:
+                        try:
+                            r_playerPerspective = requests.post(f'{IGDB_BASE_URL}/player_perspectives',
+                                                    data=f'fields *; where id = {playerPerspectiveId};',
+                                                    headers=igdb_headers(igdb_token))
+                            if r_playerPerspective.status_code == 200 and len(r_playerPerspective.json()) > 0:
+                                self.player_perspectives.append(r_playerPerspective.json()[0]['name'])
+                        except:
+                            pass
+                except Exception as e:
+                    pass
+                    
+                time.sleep(0.5)                
+                    
                 # Plain Meta Data
                 if 'first_release_date' in igdb_game.keys():
                     self.release_date = datetime.utcfromtimestamp(int(igdb_game['first_release_date'])).strftime('%d %b %Y')
+                    self.raw_release_Date = int(igdb_game['first_release_date'])
                 if 'summary' in igdb_game.keys():
                     self.igdb_description = igdb_game['summary']
 
