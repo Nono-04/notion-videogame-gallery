@@ -152,7 +152,7 @@ def check_and_update_notion():
                         "number": gd.people_rating
                     },
                     "Year": {
-                        "number": datetime.utcfromtimestamp(gd.raw_release_Date).strftime('%Y')
+                        "title": datetime.utcfromtimestamp(gd.raw_release_Date).strftime('%Y')
                     },
                 }
             }
