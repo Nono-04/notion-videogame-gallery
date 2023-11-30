@@ -118,6 +118,8 @@ def check_and_update_notion():
             gd.fetch_data_by_steamid(rt[0]['plain_text'])
 
         try: 
+            print(datetime.utcfromtimestamp(gd.raw_release_Date).strftime('%Y') )
+            print(type(datetime.utcfromtimestamp(gd.raw_release_Date).strftime('%Y') ))
             update_data = {
                 "properties": {
                     "Data Fetched": {
@@ -151,8 +153,8 @@ def check_and_update_notion():
                     "User Rating": {
                         "number": gd.people_rating
                     },
-                    "Year": {
-                        "number": datetime.utcfromtimestamp(gd.raw_release_Date).strftime('%Y')
+                    "Year": { 
+                        "number": datetime.utcfromtimestamp(gd.raw_release_Date).strftime('%Y') 
                     },
                 }
             }
