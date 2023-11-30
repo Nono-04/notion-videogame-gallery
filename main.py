@@ -118,8 +118,6 @@ def check_and_update_notion():
             gd.fetch_data_by_steamid(rt[0]['plain_text'])
 
         try: 
-            print(datetime.utcfromtimestamp(gd.raw_release_Date).strftime('%Y') )
-            print(type(datetime.utcfromtimestamp(gd.raw_release_Date).strftime('%Y') ))
             update_data = {
                 "properties": {
                     "Data Fetched": {
@@ -153,11 +151,13 @@ def check_and_update_notion():
                     "User Rating": {
                         "number": gd.people_rating
                     },
-                    "Year": { 
-                        "number": datetime.utcfromtimestamp(gd.raw_release_Date).strftime('%Y') 
-                    },
                 }
             }
+            
+            if gd.raw_release_date is not None:
+                update_data['properties']['Year'] = {
+                    "number": int(datetime.utcfromtimestamp(gd.raw_release_date).strftime('%Y'))
+                }
             
             if gd.front is not None:
                 update_data['properties']['Grid'] = {
@@ -674,7 +674,7 @@ class GameData:
                 # Plain Meta Data
                 if 'first_release_date' in igdb_game.keys():
                     self.release_date = datetime.utcfromtimestamp(int(igdb_game['first_release_date'])).strftime('%d %b %Y')
-                    self.raw_release_Date = int(igdb_game['first_release_date'])
+                    self.raw_release_date = int(igdb_game['first_release_date'])
                 if 'summary' in igdb_game.keys():
                     self.igdb_description = igdb_game['summary']
 
