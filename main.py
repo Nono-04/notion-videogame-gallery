@@ -117,82 +117,94 @@ def check_and_update_notion():
         else:
             gd.fetch_data_by_steamid(rt[0]['plain_text'])
 
-        update_data = {
-            "properties": {
-                "Data Fetched": {
-                    "select": {
-                        "name": "Yes"
-                    }
-                },
-                "Name": {
-                    "title": [
-                        {"text": {"content": gd.name}}
-                    ]
-                },
-                "Genres": {
-                    "multi_select": [{"name": genre} for genre in gd.genres]
-                },
-                "Game Modes": {
-                    "multi_select": [{"name": mode} for mode in gd.game_modes]
-                },
-                "Companies": {
-                    "multi_select": [{"name": company} for company in gd.involved_companies]
-                },
-                "Keywords": {
-                    "multi_select": [{"name": keyword} for keyword in gd.keywords]
-                },
-                "Player Perspectives": {
-                    "multi_select": [{"name": playerPerspective} for playerPerspective in gd.player_perspectives]
-                },
-                "Critics Rating": {
-                    "number": gd.critics_rating
-                },
-                "People Rating": {
-                    "number": gd.people_rating
-                },
-            }
-        }
-        
-        if gd.front is not None:
-            update_data['properties']['Grid'] = {
-                "files": [
-                    {
-                        "type": "external",
-                        "name": "test.jpg",
-                        "external": {
-                            "url": gd.front
+        try: 
+            update_data = {
+                "properties": {
+                    "Data Fetched": {
+                        "select": {
+                            "name": "Yes"
                         }
-                    }
-                ]
-            }
-
-        if gd.icon is not None:
-            update_data['icon'] = {
-                "type": "external",
-                "external": {
-                    "url": gd.icon
+                    },
+                    "Name": {
+                        "title": [
+                            {"text": {"content": gd.name}}
+                        ]
+                    },
+                    "Genres": {
+                        "multi_select": [{"name": genre} for genre in gd.genres]
+                    },
+                    "Game Modes": {
+                        "multi_select": [{"name": mode} for mode in gd.game_modes]
+                    },
+                    "Companies": {
+                        "multi_select": [{"name": company} for company in gd.involved_companies]
+                    },
+                    "Keywords": {
+                        "multi_select": [{"name": keyword} for keyword in gd.keywords]
+                    },
+                    "Player Perspectives": {
+                        "multi_select": [{"name": playerPerspective} for playerPerspective in gd.player_perspectives]
+                    },
+                    "Critics Rating": {
+                        "number": gd.critics_rating
+                    },
+                    "User Rating": {
+                        "number": gd.people_rating
+                    },
                 }
             }
-
-        if gd.hero is not None:
-            update_data['cover'] = {
-                "type": "external",
-                "external": {
-                    "url": gd.hero
-                }
-            }
-
-        r_page_props = requests.patch(
-            f"{NOTION_BASE_URL}/pages/{game['id']}",
-            headers=notion_headers,
-            data=json.dumps(update_data)
-        )
-        
-        if r_page_props.status_code != 200:
-            fail_notion(game['id'])            
-            continue
             
-        print(f"Finished updating properties for {gd.name}")
+            if gd.front is not None:
+                update_data['properties']['Grid'] = {
+                    "files": [
+                        {
+                            "type": "external",
+                            "name": "test.jpg",
+                            "external": {
+                                "url": gd.front
+                            }
+                        }
+                    ]
+                }
+
+            if gd.icon is not None:
+                update_data['icon'] = {
+                    "type": "external",
+                    "external": {
+                        "url": gd.icon
+                    }
+                }
+
+            if gd.hero is not None:
+                update_data['cover'] = {
+                    "type": "external",
+                    "external": {
+                        "url": gd.hero
+                    }
+                }
+
+            r_page_props = requests.patch(
+                f"{NOTION_BASE_URL}/pages/{game['id']}",
+                headers=notion_headers,
+                data=json.dumps(update_data)
+            )
+            
+            print(r_page_props.json())
+            print(r_page_props.status_code)
+            
+            if r_page_props.status_code != 200:
+                fail_notion(game['id'])
+                print(f"Failed updating properties for {gd.name}")       
+                continue
+                
+            print(f"Finished updating properties for {gd.name}")
+
+        except Exception as e:
+            print(e)
+            fail_notion(game['id'])
+            print(f"Failed updating properties for {gd.name}")
+            continue
+
 
         # Update page content
 
@@ -407,7 +419,6 @@ def check_and_update_notion():
 
 class GameData:
     def __init__(self):
-
         self.name = None
         self.steamgrid_id = None
 
@@ -450,7 +461,6 @@ class GameData:
         return hltb_string.replace("Hours", "h").replace("Minutes", "m")
 
     def fetch_data_by_steamid(self, steamid):
-
         r = requests.get(f"http://store.steampowered.com/api/appdetails?appids={steamid}")
         if r.status_code != 200 or not r.json()[str(steamid)]['success']:
             return False # TODO Handle error outside - update notion to "failed" status
@@ -552,8 +562,7 @@ class GameData:
             self.time_to_beat_completionist = GameData.__format_hltb(f"{hltb.gameplay_completionist} {hltb.gameplay_completionist_unit}")
         """
         # IGDB Data
-        r_creds = requests.post(
-            f"https://id.twitch.tv/oauth2/token?client_id={config.IGDB_CLIENT_ID}&client_secret={config.IGDB_SECRET}&grant_type=client_credentials")
+        r_creds = requests.post(f"https://id.twitch.tv/oauth2/token?client_id={config.IGDB_CLIENT_ID}&client_secret={config.IGDB_SECRET}&grant_type=client_credentials")
 
 
         if r_creds.status_code == 200:
