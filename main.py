@@ -707,6 +707,7 @@ if __name__ == "__main__":
     # Not the cleanest solution, but works for the simple purpose of this tool.
     # Delaying for x seconds after execution instead of executing every x seconds is actually the intended behavior in
     # order to avoid collisions if the Notion API takes longer x seconds to respond.
+    print("started")
     while True:
         check_and_update_notion()
         time.sleep(3)
