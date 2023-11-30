@@ -152,7 +152,7 @@ def check_and_update_notion():
                 },
             }
         }
-
+        
         if gd.front is not None:
             update_data['properties']['Grid'] = {
                 "files": [
@@ -590,6 +590,7 @@ class GameData:
                             r_genre = requests.post(f'{IGDB_BASE_URL}/genres',
                                                     data=f'fields *; where id = {genreId};',
                                                     headers=igdb_headers(igdb_token))
+                            time.sleep(0.5)
                             if r_genre.status_code == 200 and len(r_genre.json()) > 0:
                                 self.genres.append(r_genre.json()[0]['name'])
                         except:
@@ -597,14 +598,13 @@ class GameData:
                 except Exception as e:
                     pass
                 
-                time.sleep(0.5)
-                
                 try:
                     for modeId in igdb_game['game_modes']:
                         try:
                             r_mode = requests.post(f'{IGDB_BASE_URL}/game_modes',
                                                     data=f'fields *; where id = {modeId};',
                                                     headers=igdb_headers(igdb_token))
+                            time.sleep(0.5)
                             if r_mode.status_code == 200 and len(r_mode.json()) > 0:
                                 self.game_modes.append(r_mode.json()[0]['name'])
                         except:
@@ -612,7 +612,7 @@ class GameData:
                 except Exception as e:
                     pass
                     
-                time.sleep(0.5)
+                time.sleep(1)
                 
                 try:
                     for companyId in igdb_game['involved_companies']:
@@ -620,6 +620,7 @@ class GameData:
                             r_company = requests.post(f'{IGDB_BASE_URL}/companies',
                                                     data=f'fields *; where id = {companyId};',
                                                     headers=igdb_headers(igdb_token))
+                            time.sleep(0.5)
                             if r_company.status_code == 200 and len(r_company.json()) > 0:
                                 self.involved_companies.append(r_company.json()[0]['name'])
                         except:
@@ -627,21 +628,20 @@ class GameData:
                 except Exception as e:
                     pass
                     
-                time.sleep(0.5)
+                time.sleep(1)
                 try:
                     for keywordId in igdb_game['keywords']:
                         try:
                             r_keyword = requests.post(f'{IGDB_BASE_URL}/keywords',
                                                     data=f'fields *; where id = {keywordId};',
                                                     headers=igdb_headers(igdb_token))
+                            time.sleep(0.5)
                             if r_keyword.status_code == 200 and len(r_keyword.json()) > 0:
                                 self.keywords.append(r_keyword.json()[0]['name'])
                         except:
                             pass
                 except Exception as e:
                     pass
-                    
-                time.sleep(0.5)
                 
                 try:
                     for playerPerspectiveId in igdb_game['player_perspectives']:
@@ -649,14 +649,13 @@ class GameData:
                             r_playerPerspective = requests.post(f'{IGDB_BASE_URL}/player_perspectives',
                                                     data=f'fields *; where id = {playerPerspectiveId};',
                                                     headers=igdb_headers(igdb_token))
+                            time.sleep(0.5)
                             if r_playerPerspective.status_code == 200 and len(r_playerPerspective.json()) > 0:
                                 self.player_perspectives.append(r_playerPerspective.json()[0]['name'])
                         except:
                             pass
                 except Exception as e:
-                    pass
-                    
-                time.sleep(0.5)                
+                    pass         
                     
                 # Plain Meta Data
                 if 'first_release_date' in igdb_game.keys():
